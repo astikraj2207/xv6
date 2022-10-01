@@ -1,0 +1,93 @@
+From f41e8682f22e36c37b145c540e2d639b80cfcd9b Mon Sep 17 00:00:00 2001
+From: ad1tyat <adityatrivedi25@gmail.com>
+Date: Sun, 31 Oct 2021 22:33:26 +0530
+Subject: [PATCH] Completed Part A
+
+---
+ sysproc.c |  6 ++++--
+ trap.c    | 31 +++++++++++++++++++++++++++++++
+ vm.c      |  2 +-
+ 3 files changed, 36 insertions(+), 3 deletions(-)
+
+diff --git a/sysproc.c b/sysproc.c
+index 0686d29..34b4c38 100644
+--- a/sysproc.c
++++ b/sysproc.c
+@@ -51,8 +51,10 @@ sys_sbrk(void)
+   if(argint(0, &n) < 0)
+     return -1;
+   addr = myproc()->sz;
+-  if(growproc(n) < 0)
+-    return -1;
++  myproc()->sz += n;
++  
++  //  if(growproc(n) < 0)
++  //    return -1;
+   return addr;
+ }
+ 
+diff --git a/trap.c b/trap.c
+index 41c66eb..947d758 100644
+--- a/trap.c
++++ b/trap.c
+@@ -8,6 +8,8 @@
+ #include "traps.h"
+ #include "spinlock.h"
+ 
++int mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm);
++
+ // Interrupt descriptor table (shared by all CPUs).
+ struct gatedesc idt[256];
+ extern uint vectors[];  // in vectors.S: array of 256 entry pointers
+@@ -47,6 +49,35 @@ trap(struct trapframe *tf)
+   }
+ 
+   switch(tf->trapno){
++  
++  case T_PGFLT:
++    ;
++    uint va=rcr2();
++    va=PGROUNDDOWN(va);
++
++    char *mem;
++    mem = kalloc();
++
++    if(mem == 0){
++      cprintf("No page left to be allocated\n");
++      panic("trap");
++      return;
++    }
++    
++    memset(mem, 0, PGSIZE);
++
++    int permissions =  (int)(PTE_W|PTE_U);
++    uint physAddr = V2P(mem);
++    
++    if(mappages(myproc()->pgdir, (char*)va, PGSIZE, physAddr, permissions) < 0){
++      cprintf("Page could not be allocated\n");
++      panic("trap");
++      return;
++    
++    }
++
++    break;
++
+   case T_IRQ0 + IRQ_TIMER:
+     if(cpuid() == 0){
+       acquire(&tickslock);
+diff --git a/vm.c b/vm.c
+index 7134cff..0275cec 100644
+--- a/vm.c
++++ b/vm.c
+@@ -57,7 +57,7 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
+ // Create PTEs for virtual addresses starting at va that refer to
+ // physical addresses starting at pa. va and size might not
+ // be page-aligned.
+-static int
++int
+ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
+ {
+   char *a, *last;
+-- 
+2.25.1
+

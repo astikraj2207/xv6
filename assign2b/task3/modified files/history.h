@@ -1,0 +1,2 @@
+#define MAX_HISTORY (16)
+#define MAX_BUFFER_LEN (128)

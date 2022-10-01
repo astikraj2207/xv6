@@ -1,0 +1,81 @@
+From d3346821f1addd7f00358a23007300bfb3f55a9a Mon Sep 17 00:00:00 2001
+From: ad1tyat <adityatrivedi25@gmail.com>
+Date: Thu, 30 Sep 2021 22:47:01 +0530
+Subject: [PATCH] Finished task 2
+
+---
+ syscall.c | 2 ++
+ syscall.h | 1 +
+ sysproc.c | 7 +++++++
+ user.h    | 1 +
+ usys.S    | 1 +
+ 5 files changed, 12 insertions(+)
+
+diff --git a/syscall.c b/syscall.c
+index ee85261..f447101 100644
+--- a/syscall.c
++++ b/syscall.c
+@@ -103,6 +103,7 @@ extern int sys_unlink(void);
+ extern int sys_wait(void);
+ extern int sys_write(void);
+ extern int sys_uptime(void);
++extern int sys_yield(void);
+ 
+ static int (*syscalls[])(void) = {
+ [SYS_fork]    sys_fork,
+@@ -126,6 +127,7 @@ static int (*syscalls[])(void) = {
+ [SYS_link]    sys_link,
+ [SYS_mkdir]   sys_mkdir,
+ [SYS_close]   sys_close,
++[SYS_yield]   sys_yield,
+ };
+ 
+ void
+diff --git a/syscall.h b/syscall.h
+index bc5f356..73b388e 100644
+--- a/syscall.h
++++ b/syscall.h
+@@ -20,3 +20,4 @@
+ #define SYS_link   19
+ #define SYS_mkdir  20
+ #define SYS_close  21
++#define SYS_yield  22
+diff --git a/sysproc.c b/sysproc.c
+index 0686d29..f8945b5 100644
+--- a/sysproc.c
++++ b/sysproc.c
+@@ -89,3 +89,10 @@ sys_uptime(void)
+   release(&tickslock);
+   return xticks;
+ }
++
++int
++sys_yield(void)
++{
++  yield();
++  return 0;
++}
+diff --git a/user.h b/user.h
+index 4f99c52..135a2d4 100644
+--- a/user.h
++++ b/user.h
+@@ -23,6 +23,7 @@ int getpid(void);
+ char* sbrk(int);
+ int sleep(int);
+ int uptime(void);
++int yield(void);
+ 
+ // ulib.c
+ int stat(const char*, struct stat*);
+diff --git a/usys.S b/usys.S
+index 8bfd8a1..786bb45 100644
+--- a/usys.S
++++ b/usys.S
+@@ -29,3 +29,4 @@ SYSCALL(getpid)
+ SYSCALL(sbrk)
+ SYSCALL(sleep)
+ SYSCALL(uptime)
++SYSCALL(yield)
+-- 
+2.25.1
+
