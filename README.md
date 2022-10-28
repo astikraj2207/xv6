@@ -11,7 +11,7 @@ Assignment 2a, 2b, 3 = Group
 Group Members :
 
 1. Aditya Trivedi
-2. Akshat Arun
+2. Astik Raj
 3. Atharva Vijay Varde
 4. Shashwat Sharma
 
